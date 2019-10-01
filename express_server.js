@@ -3,8 +3,9 @@ const express = require('express');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const app = express();
+const bcrypt = require('bcrypt');
 
-const { users, checkExisting, findUserBy} = require('./data/users');
+const { users, findUserBy} = require('./data/users');
 //goal is to require an object and access the methods like users.method()
 
 app.use(cookieParser());
@@ -129,7 +130,7 @@ app.post('/register', (req, res) => {
     users[uniqueID] = {
       id: uniqueID,
       email: req.body.email,
-      password: req.body.password
+      password: bcrypt.hashSync(req.body.password, 10)
     };
   }
   console.log(users);
@@ -142,7 +143,8 @@ app.post('/login', (req, res) => {
   let user = findUserBy('email', req.body.email);
   if (!user) {
     res.status(403).send("email not found");
-  } else if (user.password !== req.body.password) {
+    //use special method here to compare
+  } else if (!bcrypt.compareSync(req.body.password, user.password)/* user.password !== req.body.password */) {
     res.status(403).send('password incorrect');
   }
   res.cookie('user_id', user.id);
