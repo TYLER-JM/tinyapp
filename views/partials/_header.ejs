@@ -10,5 +10,24 @@
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
       </div>
     </div>
+    <!--LOGOUT FORM -only display if username is presenet-->
+    <% if (username) { %>
+      <form class="form-inline" action="/logout" method="POST">
+        <div class="form-group mb-2">
+          <h4 class="font-weight-light" style="margin: 1em">Logged in as: <%= username%></h4>
+          <button type="submit" class="btn btn-outline-dark">Logout</button>
+        </div>
+      </form>
+    <% } else { %>
+      
+    <!--LOGIN FORM- only display if no username present-->
+    <form class="form-inline" action="/login" method="POST">
+      <div class="form-group mb-2">
+        <label for="username"></label>
+        <input class="form-control" type="text", name="username" placeholder="Username" style="width: 300px; margin: 1em">
+        <button type="submit" class="btn btn-outline-dark">Login</button>
+      </div>
+    </form>
+    <% } %>
   </nav>
 </header>

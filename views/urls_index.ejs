@@ -11,7 +11,7 @@
 <body>
   <% include ./partials/_header %>
   <main style="margin: 1em;">
-  <h3>MYURLS</h3>
+  <h3>MyURLS</h3>
   <table class="table">
     <thead>
       <tr>
@@ -27,10 +27,10 @@
           <td><%= url%></td>
           <td><%= urls[url] %></td>
 
-          <!--NEW EDIT BUTTON DONE-->
+          <!--EDIT BUTTON DONE-->
           <td>
             <form method="GET" action="/urls/<%= url%>/">
-              <button class="btn btn-primary" type="submit">Edit</button>
+              <button class="btn btn-outline-dark" type="submit">Edit</button>
             </form>
           </td>
 
