@@ -68,15 +68,14 @@ app.get('/urls/new', (req, res) => {
 });
 app.get('/urls/:shortURL', (req, res) => {
 
-  //send a better response with a promt to login/register
-  if (!req.cookies.user_id) {
-    res.send("DENIED");
-  }
   let templateVars = {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL].longURL,
     user: findUserBy('id', req.cookies.user_id)
   };
+  if (!req.cookies.user_id) {
+    res.render('prompt', templateVars);
+  }
   res.render('urls_show', templateVars);
 });
 app.get('/register', (req, res) => {
@@ -107,15 +106,17 @@ app.get('/u/:shortURL', (req, res) => {
   res.redirect(longURL);
 });
 app.post('/urls/:shortURL/delete', (req, res) => {
-  // console.log(urlDatabase);
-  res.redirect('/urls');
-  delete urlDatabase[req.params.shortURL];
+  if (req.cookies.user_id) {
+    res.redirect('/urls');
+    delete urlDatabase[req.params.shortURL];
+  }
 });
 app.post('/urls/:id', (req, res) => {
-  urlDatabase[req.params.id].longURL = req.body.updateLong;
-  console.log(req.body.updateLong);
-  // console.log('urlDatabase: ', urlDatabase);
-  res.redirect('/urls');
+  if (req.cookies.user_id) {
+    urlDatabase[req.params.id].longURL = req.body.updateLong;
+    console.log(req.body.updateLong);
+    res.redirect('/urls');
+  }
 });
 
 app.post('/register', (req, res) => {
@@ -137,11 +138,7 @@ app.post('/register', (req, res) => {
   res.redirect('/urls');
 });
 
-//THIS WILL CHANGE//
 app.post('/login', (req, res) => {
-  //set a cookie <res.cookie> named username to the value passed in through the form
-  //<req.body.username>
-  //redirect the browser back to /urls
   let user = findUserBy('email', req.body.email);
   if (!user) {
     res.status(403).send("email not found");
