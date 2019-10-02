@@ -1,3 +1,8 @@
+const urlDatabase = {
+  "b2xVn2" : {longURL: "http://www.lighthouselabs.ca", userID: "userRandomID"},
+  "9sm5xK" : {longURL: "http://www.google.com", userID: "userRandomID"}
+};
+
 const users = {
   "userRandomID": {
     id: "userRandomID",
@@ -14,9 +19,11 @@ const users = {
 //goal is to export an object of functions without exporting the users object
 
 module.exports = {
-  users, //get all users
-  // all: () => users,
-  //return a single user
+  users,
+  urlDatabase,
+
+  //helper function that returns a single user,
+  //can search the users DB by the email or id
   findUserBy: (key, val) => {
     for (let user in users) {
       if (users[user][key] === val) {
@@ -24,14 +31,23 @@ module.exports = {
       }
     }
   },
-  //get number of users
-  //does an email exist already?
-  checkExisting: (email) => {
-    for (let user in users) {
-      if (users[user].email === email) {
-        return true;
-      }
-      return false;
+  generateRandomString: () => {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let str = '';
+    for (let i = 0; i < 6; i++) {
+      str += characters.charAt(Math.floor(Math.random() * characters.length));
     }
+    return str;
+  },
+  
+  //helper function to find each URL associated with a certain user
+  urlsForUser: (id) => {
+    let usersURLs = {};
+    for (let url in urlDatabase) {
+      if (urlDatabase[url].userID === id) {
+        usersURLs[url] = urlDatabase[url].longURL;
+      }
+    }
+    return usersURLs;
   }
 };
