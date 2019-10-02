@@ -78,10 +78,11 @@ app.get('/urls/:shortURL', (req, res) => {
 
 app.get('/u/:shortURL', (req, res) => {
   if (!Object.prototype.hasOwnProperty.call(urlDatabase, req.params.shortURL)) {
-    console.log("THIS SHOULD BE tRUE");
     res.send('<html><h3>URL does not exist. <a href="/">go back</a></h3></html>');
   }
   const longURL = urlDatabase[req.params.shortURL].longURL;
+  urlDatabase[req.params.shortURL].count++;
+  //INCREMENT THE COUNT
   res.redirect(longURL);
 });
 app.get('/register', (req, res) => {
@@ -116,7 +117,8 @@ app.post('/urls', (req, res) => {
   let shortened = generateRandomString();
   urlDatabase[shortened] = {
     longURL: req.body.longURL,
-    userID: req.session.user_id
+    userID: req.session.user_id,
+    count: 0
   };
 
   // would rather it did this...
@@ -135,7 +137,10 @@ app.delete('/urls/:shortURL/delete', (req, res) => {
 });
 app.put('/urls/:id', (req, res) => {
   if (req.session.user_id) {
-    urlDatabase[req.params.id].longURL = req.body.updateLong;
+    if (urlDatabase[req.params.id].longURL !== req.body.updateLong) {
+      urlDatabase[req.params.id].count = 0;
+      urlDatabase[req.params.id].longURL = req.body.updateLong;
+    }
     res.redirect('/urls');
   }
 });
@@ -192,11 +197,6 @@ app.post('/logout', (req, res) => {
   res.redirect('/urls');
 });
 
-
-// app.get('/u/:shortURL', (req, res) => {
-//   const longURL = urlDatabase[req.params];
-//   res.redirect(longURL);
-// });
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}`);

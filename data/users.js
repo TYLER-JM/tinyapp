@@ -1,6 +1,6 @@
 const urlDatabase = {
-  "b2xVn2" : {longURL: "http://www.lighthouselabs.ca", userID: "userRandomID"},
-  "9sm5xK" : {longURL: "http://www.google.com", userID: "userRandomID"}
+  "b2xVn2" : {longURL: "http://www.lighthouselabs.ca", userID: "userRandomID", count: 0},
+  "9sm5xK" : {longURL: "http://www.google.com", userID: "userRandomID", count: 0}
 };
 
 const users = {
@@ -45,7 +45,10 @@ module.exports = {
     let usersURLs = {};
     for (let url in urlDatabase) {
       if (urlDatabase[url].userID === id) {
-        usersURLs[url] = urlDatabase[url].longURL;
+        usersURLs[url] = {
+          longURL: urlDatabase[url].longURL,
+          count: urlDatabase[url].count
+        };
       }
     }
     return usersURLs;
