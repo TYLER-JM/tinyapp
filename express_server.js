@@ -6,43 +6,18 @@ const app = express();
 const bcrypt = require('bcrypt');
 const cookieSession = require('cookie-session');
 
-const { users, findUserBy} = require('./data/users');
-//goal is to require an object and access the methods like users.method()
+const { users, urlDatabase, findUserBy, generateRandomString, urlsForUser } = require('./data/users');
+
 app.use(cookieSession({
   name: 'session',
   keys: ['key1', 'key2']
 }));
 app.use(cookieParser());
 app.set('view engine', 'ejs');
-
-//copied from stack overflow
-const generateRandomString = function() {
-  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let str = '';
-  for (let i = 0; i < 6; i++) {
-    str += characters.charAt(Math.floor(Math.random() * characters.length));
-  }
-  return str;
-};
-
-const urlDatabase = {
-  "b2xVn2" : {longURL: "http://www.lighthouselabs.ca", userID: "userRandomID"},
-  "9sm5xK" : {longURL: "http://www.google.com", userID: "userRandomID"}
-};
-
-//pass into it req.session.user_id to
-//return an object with the users short and long urls
-const urlsForUser = (id, ob) => {
-  let usersURLs = {};
-  for (let url in ob) {
-    if (ob[url].userID === id) {
-      usersURLs[url] = ob[url].longURL;
-    }
-  }
-  return usersURLs;
-};
-
 app.use(bodyParser.urlencoded({extended: true}));
+
+//////////////
+//GET ROUTES//
 
 app.get('/', (req, res) => {
   if (req.session.user_id) {
@@ -51,13 +26,14 @@ app.get('/', (req, res) => {
     res.redirect('/login');
   }
 });
+
 app.get('/urls.json', (req, res) => {
   res.json(urlDatabase);
 });
 
 app.get('/urls', (req, res) => {
   let templateVars = {
-    urls: urlsForUser(req.session.user_id, urlDatabase),
+    urls: urlsForUser(req.session.user_id),
     user: findUserBy('id', req.session.user_id),
     password: true
   };
@@ -70,16 +46,14 @@ app.get('/urls/new', (req, res) => {
     password: true
   };
   if (!templateVars.user) {
-    res.redirect('/login'); //redirect to promt to login/register
+    res.redirect('/login');
   } else {
     res.render('urls_new', templateVars);
   }
 });
+
 app.get('/urls/:shortURL', (req, res) => {
-  // console.log("SHORTURL: ", req.params.shortURL);
-  // console.log('URLDATABASE:::::', urlDatabase);
   if (!Object.prototype.hasOwnProperty.call(urlDatabase, req.params.shortURL)) {
-    // console.log('shortURL inside first conditional::::', req.params.shortURL);
     res.send('<html><h3>URL does not exist. <a href="/">go back</a></h3></html>');
   }
   let templateVars = {
@@ -89,13 +63,10 @@ app.get('/urls/:shortURL', (req, res) => {
     password: true,
     loggedIn: false
   };
-  let loggedInURLs = urlsForUser(req.session.user_id, urlDatabase);
-  //ADDED THIS CONDITION
+  let loggedInURLs = urlsForUser(req.session.user_id);
   if (!req.session.user_id) {
-    console.log("NO USER LOGGED IN");
     res.render('prompt', templateVars);
   } else if (!Object.prototype.hasOwnProperty.call(loggedInURLs, req.params.shortURL)) {
-    console.log("WRONG USER LOGGED IN");
     templateVars.loggedIn = true;
     res.render('prompt', templateVars);
   } else {
@@ -136,6 +107,8 @@ app.get('/login', (req, res) => {
   res.render('login', templateVars);
 });
 
+///////////////
+//POST ROUTES//
 
 app.post('/urls', (req, res) => {
   let shortened = generateRandomString();
@@ -148,8 +121,8 @@ app.post('/urls', (req, res) => {
   // res.redirect(`/urls`);
   res.redirect(`/urls/${shortened}`);
 });
+
 app.post('/urls/:shortURL/delete', (req, res) => {
-  // let loggedInURLs = urlsForUser(req.session.user_id, urlDatabase);
   if (req.session.user_id) {
     res.redirect('/urls');
     delete urlDatabase[req.params.shortURL];
@@ -161,7 +134,6 @@ app.post('/urls/:shortURL/delete', (req, res) => {
 app.post('/urls/:id', (req, res) => {
   if (req.session.user_id) {
     urlDatabase[req.params.id].longURL = req.body.updateLong;
-    console.log(req.body.updateLong);
     res.redirect('/urls');
   }
 });
@@ -187,9 +159,7 @@ app.post('/register', (req, res) => {
       password: bcrypt.hashSync(req.body.password, 10)
     };
   }
-  // console.log(users);
   req.session.user_id = uniqueID;
-  // res.cookie('user_id', uniqueID);
   res.redirect('/urls');
 });
 
