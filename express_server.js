@@ -4,10 +4,14 @@ const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const app = express();
 const bcrypt = require('bcrypt');
+const cookieSession = require('cookie-session');
 
 const { users, findUserBy} = require('./data/users');
 //goal is to require an object and access the methods like users.method()
-
+app.use(cookieSession({
+  name: 'session',
+  keys: ['key1', 'key2']
+}));
 app.use(cookieParser());
 app.set('view engine', 'ejs');
 
@@ -26,7 +30,7 @@ const urlDatabase = {
   "9sm5xK" : {longURL: "http://www.google.com", userID: "userRandomID"}
 };
 
-//pass into it req.cookies.user_id to
+//pass into it req.session.user_id to
 //return an object with the users short and long urls
 const urlsForUser = (id, ob) => {
   let usersURLs = {};
@@ -52,14 +56,14 @@ app.get('/hello', (req, res) => {
 });
 app.get('/urls', (req, res) => {
   let templateVars = {
-    urls: urlsForUser(req.cookies.user_id, urlDatabase),
-    user: findUserBy('id', req.cookies.user_id)
+    urls: urlsForUser(req.session.user_id, urlDatabase),
+    user: findUserBy('id', req.session.user_id)
   };
   res.render('urls_index', templateVars);
 });
 app.get('/urls/new', (req, res) => {
   let templateVars = {
-    user: findUserBy('id', req.cookies.user_id)
+    user: findUserBy('id', req.session.user_id)
   };
   if (!templateVars.user) {
     res.redirect('/login'); //redirect to promt to login/register
@@ -72,23 +76,23 @@ app.get('/urls/:shortURL', (req, res) => {
   let templateVars = {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL].longURL,
-    user: findUserBy('id', req.cookies.user_id)
+    user: findUserBy('id', req.session.user_id)
   };
-  if (!req.cookies.user_id) {
+  if (!req.session.user_id) {
     res.render('prompt', templateVars);
   }
   res.render('urls_show', templateVars);
 });
 app.get('/register', (req, res) => {
   let templateVars = {
-    user: findUserBy('id', req.cookies.user_id)
+    user: findUserBy('id', req.session.user_id)
   };
   res.render('create_account', templateVars);
 });
 
 app.get('/login', (req, res) => {
   let templateVars = {
-    user: findUserBy('id', req.cookies.user_id)
+    user: findUserBy('id', req.session.user_id)
   };
   res.render('login', templateVars);
 });
@@ -98,7 +102,7 @@ app.post('/urls', (req, res) => {
   let shortened = generateRandomString();
   urlDatabase[shortened] = {
     longURL: req.body.longURL,
-    userID: req.cookies.user_id
+    userID: req.session.user_id
   };
   res.redirect(`/urls/${shortened}`);
 });
@@ -107,13 +111,13 @@ app.get('/u/:shortURL', (req, res) => {
   res.redirect(longURL);
 });
 app.post('/urls/:shortURL/delete', (req, res) => {
-  if (req.cookies.user_id) {
+  if (req.session.user_id) {
     res.redirect('/urls');
     delete urlDatabase[req.params.shortURL];
   }
 });
 app.post('/urls/:id', (req, res) => {
-  if (req.cookies.user_id) {
+  if (req.session.user_id) {
     urlDatabase[req.params.id].longURL = req.body.updateLong;
     console.log(req.body.updateLong);
     res.redirect('/urls');
@@ -133,9 +137,9 @@ app.post('/register', (req, res) => {
       password: bcrypt.hashSync(req.body.password, 10)
     };
   }
-  console.log(users);
-  //set a user_id cookie containing uniqueID
-  res.cookie('user_id', uniqueID);
+  // console.log(users);
+  req.session.user_id = uniqueID;
+  // res.cookie('user_id', uniqueID);
   res.redirect('/urls');
 });
 
@@ -143,16 +147,16 @@ app.post('/login', (req, res) => {
   let user = findUserBy('email', req.body.email);
   if (!user) {
     res.status(403).send("email not found");
-    //use special method here to compare
   } else if (!bcrypt.compareSync(req.body.password, user.password)/* user.password !== req.body.password */) {
     res.status(403).send('password incorrect');
   }
-  res.cookie('user_id', user.id);
+  req.session.user_id = user.id;
+  // res.cookie('user_id', user.id);
   res.redirect('/urls');
-  // console.log(req.cookies);
 });
 app.post('/logout', (req, res) => {
-  res.clearCookie('user_id');
+  req.session = null; //=>to destroy the session
+  // res.clearCookie('user_id');
   res.redirect('/urls');
 });
 
