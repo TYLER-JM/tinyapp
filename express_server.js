@@ -5,16 +5,18 @@ const bodyParser = require('body-parser');
 const app = express();
 const bcrypt = require('bcrypt');
 const cookieSession = require('cookie-session');
+const methodOverride = require('method-override');
 
 const { users, urlDatabase, findUserBy, generateRandomString, urlsForUser } = require('./data/users');
 
+app.set('view engine', 'ejs');
 app.use(cookieSession({
   name: 'session',
   keys: ['key1', 'key2']
 }));
 app.use(cookieParser());
-app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({extended: true}));
+app.use(methodOverride('_method'));
 
 //////////////
 //GET ROUTES//
@@ -122,7 +124,7 @@ app.post('/urls', (req, res) => {
   res.redirect(`/urls/${shortened}`);
 });
 
-app.post('/urls/:shortURL/delete', (req, res) => {
+app.delete('/urls/:shortURL/delete', (req, res) => {
   if (req.session.user_id) {
     res.redirect('/urls');
     delete urlDatabase[req.params.shortURL];
@@ -131,7 +133,7 @@ app.post('/urls/:shortURL/delete', (req, res) => {
   }
 
 });
-app.post('/urls/:id', (req, res) => {
+app.put('/urls/:id', (req, res) => {
   if (req.session.user_id) {
     urlDatabase[req.params.id].longURL = req.body.updateLong;
     res.redirect('/urls');
