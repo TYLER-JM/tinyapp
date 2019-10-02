@@ -11,26 +11,24 @@
 <body>
   <% include ./partials/_header %>
   <main style="margin: 1em">
-    <h3>Login</h3>
-    <!--LOGIN FORM-->
-    <form class="form-group" action="/login" method="POST">
-      <div class="form-group mb-2">
-        <% if (!email) { %>
-          <label class="alert alert-danger" role="alert" for="email">Email not found</label>
-        <% } else { %>
-          <label for="email">Email:</label>
-        <% } %>
-        <input class="form-control" type="email" name="email" placeholder="exmaple@example.com" style="width: 300px; margin-bottom: 1em">
-        <% if (!password) { %>
-          <label class="alert alert-danger" role="alert" for="password">password invalid</label>
-        <% } else { %>
-          <label for="password">Password:</label>
-        <% } %>
-        <input class="form-control" type="password" name="password" style="width: 300px; margin-bottom: 1em">
+      <h3 class="mx-auto" style="width: 300px">Login</h3>
+      <!--LOGIN FORM-->
+      <form class="form-group" action="/login" method="POST">
+          <% if (!email) { %>
+            <label class="alert alert-danger" role="alert" for="email">Email not found</label>
+          <% } else { %>
+            <label for="email">Email:</label>
+          <% } %>
+          <input class="form-control" type="email" name="email" placeholder="exmaple@example.com" style="width: 300px; margin-bottom: 1em">
+          <% if (!password) { %>
+            <label class="alert alert-danger" role="alert" for="password">password invalid</label>
+          <% } else { %>
+            <label for="password">Password:</label>
+          <% } %>
+          <input class="form-control" type="password" name="password" style="width: 300px; margin-bottom: 1em">
 
-        <button type="submit" class="btn btn-outline-dark">Login</button>
-      </div>
-    </form>
+          <button type="submit" class="btn btn-outline-dark">Login</button>
+      </form>
   </main>
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
