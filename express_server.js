@@ -77,16 +77,29 @@ app.get('/urls/new', (req, res) => {
 });
 app.get('/urls/:shortURL', (req, res) => {
 
+  if (!Object.prototype.hasOwnProperty.call(urlDatabase, req.params.shortURL)) {
+    console.log("THIS SHOULD BE tRUE");
+    res.send('<html><h3>URL does not exist. <a href="/">go back</a></h3></html>');
+  }
   let templateVars = {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL].longURL,
     user: findUserBy('id', req.session.user_id),
-    password: true
+    password: true,
+    loggedIn: false
   };
+  let loggedInURLs = urlsForUser(req.session.user_id, urlDatabase);
+  //ADDED THIS CONDITION
   if (!req.session.user_id) {
+    console.log("NO USER LOGGED IN");
     res.render('prompt', templateVars);
+  } else if (!Object.prototype.hasOwnProperty.call(loggedInURLs, req.params.shortURL)) {
+    console.log("WRONG USER LOGGED IN");
+    templateVars.loggedIn = true;
+    res.render('prompt', templateVars);
+  } else {
+    res.render('urls_show', templateVars);
   }
-  res.render('urls_show', templateVars);
 });
 app.get('/register', (req, res) => {
   let templateVars = {
