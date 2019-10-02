@@ -76,9 +76,10 @@ app.get('/urls/new', (req, res) => {
   }
 });
 app.get('/urls/:shortURL', (req, res) => {
-
+  // console.log("SHORTURL: ", req.params.shortURL);
+  // console.log('URLDATABASE:::::', urlDatabase);
   if (!Object.prototype.hasOwnProperty.call(urlDatabase, req.params.shortURL)) {
-    console.log("THIS SHOULD BE tRUE");
+    // console.log('shortURL inside first conditional::::', req.params.shortURL);
     res.send('<html><h3>URL does not exist. <a href="/">go back</a></h3></html>');
   }
   let templateVars = {
@@ -101,11 +102,25 @@ app.get('/urls/:shortURL', (req, res) => {
     res.render('urls_show', templateVars);
   }
 });
+
+app.get('/u/:shortURL', (req, res) => {
+  if (!Object.prototype.hasOwnProperty.call(urlDatabase, req.params.shortURL)) {
+    console.log("THIS SHOULD BE tRUE");
+    res.send('<html><h3>URL does not exist. <a href="/">go back</a></h3></html>');
+  }
+  const longURL = urlDatabase[req.params.shortURL].longURL;
+  res.redirect(longURL);
+});
 app.get('/register', (req, res) => {
   let templateVars = {
     user: findUserBy('id', req.session.user_id),
-    password: true
+    password: true,
+    email: false,
+    missingInput: false
   };
+  if (req.session.user_id) {
+    res.redirect('/');
+  }
   res.render('create_account', templateVars);
 });
 
@@ -115,6 +130,9 @@ app.get('/login', (req, res) => {
     email: true,
     password: true
   };
+  if (req.session.user_id) {
+    res.redirect('/');
+  }
   res.render('login', templateVars);
 });
 
@@ -126,19 +144,19 @@ app.post('/urls', (req, res) => {
     userID: req.session.user_id
   };
 
-  //changed this...
-  res.redirect(`/urls`);
-  // res.redirect(`/urls/${shortened}`);
-});
-app.get('/u/:shortURL', (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL].longURL;
-  res.redirect(longURL);
+  // would rather it did this...
+  // res.redirect(`/urls`);
+  res.redirect(`/urls/${shortened}`);
 });
 app.post('/urls/:shortURL/delete', (req, res) => {
+  // let loggedInURLs = urlsForUser(req.session.user_id, urlDatabase);
   if (req.session.user_id) {
     res.redirect('/urls');
     delete urlDatabase[req.params.shortURL];
+  } else {
+    res.send("you've misspeted");
   }
+
 });
 app.post('/urls/:id', (req, res) => {
   if (req.session.user_id) {
@@ -150,10 +168,18 @@ app.post('/urls/:id', (req, res) => {
 
 app.post('/register', (req, res) => {
   let uniqueID = generateRandomString();
+  let templateVars = {
+    user: findUserBy('email', req.body.email),
+    email: false,
+    missingInput: false,
+    password: false
+  };
   if (findUserBy('email', req.body.email)) {
-    res.status(400).send('400 error, user email already exists');
+    templateVars.email = true;
+    res.status(400).render('create_account', templateVars);
   } else if (!req.body.email || !req.body.password) {
-    res.status(400).send('400 error, both fields are required');
+    templateVars.missingInput = true;
+    res.status(400).render('create_account', templateVars);
   } else {
     users[uniqueID] = {
       id: uniqueID,
