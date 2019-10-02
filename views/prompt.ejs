@@ -11,7 +11,11 @@
   <% include ./partials/_header %>
 
   <main style="margin: 1em">
-    <h3>Please <a href="/login">Login</a> or <a href="/register">Register</a></h3>
+    <% if (loggedIn) { %>
+      <h3>You do not have access to this shortened URL</h3>
+    <% } else { %>
+      <h3>Please <a href="/login">Login</a> or <a href="/register">Register</a></h3>
+    <% } %>
 
   </main>
 
