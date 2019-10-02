@@ -18,9 +18,17 @@
     <!--CREATE account FORM-->
     <form class="form-group" action="/register" method="POST">
       <div class="form-group mb-2">
-        <label for="email">Email:</label>
+        <% if (email) { %>
+          <label class="alert alert-danger" role="alert" for="email">That email already exists in our database</label>
+        <% } else { %>
+          <label for="email">Email:</label>
+        <% } %>
         <input class="form-control" type="email" name="email" placeholder="example@example.com" style="width: 300px; margin-bottom: 1em">
-        <label for="password">Password:</label>
+        <% if (missingInput) { %>
+          <label class="alert alert-danger" role="alert" for="password">Both fields are required</label>
+        <% } else { %>
+          <label for="password">Password:</label>
+        <% } %>
         <input class="form-control" type="password" name="password" style="width: 300px; margin-bottom: 1em">
         <button type="submit" class="btn btn-outline-dark">Create</button>
       </div>
