@@ -11,7 +11,11 @@
 <body>
   <% include ./partials/_header %>
   <main style="margin: 1em;">
-  <h3>MyURLS</h3>
+    <% if (!user) { %>
+      <div class="alert alert-dark" role="alert">Login or Register to start creating, editing, and saving URLs</div>
+    <% } else { %>
+      <h3>MyURLS</h3>
+    <% } %>
   <table class="table">
     <thead>
       <tr>
@@ -27,7 +31,7 @@
           <td><%= url%></td>
           <td><%= urls[url] %></td>
 
-          <!--EDIT BUTTON DONE-->
+          <!--EDIT and DELETE BUTTON DONE-->
           <td>
             <form method="GET" action="/urls/<%= url%>/">
               <button class="btn btn-outline-dark" type="submit">Edit</button>

@@ -54,16 +54,20 @@ app.get('/urls.json', (req, res) => {
 app.get('/hello', (req, res) => {
   res.send('<html><body>Hello <b>World</b></body></html>\n');
 });
+
 app.get('/urls', (req, res) => {
   let templateVars = {
     urls: urlsForUser(req.session.user_id, urlDatabase),
-    user: findUserBy('id', req.session.user_id)
+    user: findUserBy('id', req.session.user_id),
+    password: true
   };
   res.render('urls_index', templateVars);
 });
+
 app.get('/urls/new', (req, res) => {
   let templateVars = {
-    user: findUserBy('id', req.session.user_id)
+    user: findUserBy('id', req.session.user_id),
+    password: true
   };
   if (!templateVars.user) {
     res.redirect('/login'); //redirect to promt to login/register
@@ -76,7 +80,8 @@ app.get('/urls/:shortURL', (req, res) => {
   let templateVars = {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL].longURL,
-    user: findUserBy('id', req.session.user_id)
+    user: findUserBy('id', req.session.user_id),
+    password: true
   };
   if (!req.session.user_id) {
     res.render('prompt', templateVars);
@@ -85,14 +90,17 @@ app.get('/urls/:shortURL', (req, res) => {
 });
 app.get('/register', (req, res) => {
   let templateVars = {
-    user: findUserBy('id', req.session.user_id)
+    user: findUserBy('id', req.session.user_id),
+    password: true
   };
   res.render('create_account', templateVars);
 });
 
 app.get('/login', (req, res) => {
   let templateVars = {
-    user: findUserBy('id', req.session.user_id)
+    user: findUserBy('id', req.session.user_id),
+    email: true,
+    password: true
   };
   res.render('login', templateVars);
 });
@@ -104,7 +112,10 @@ app.post('/urls', (req, res) => {
     longURL: req.body.longURL,
     userID: req.session.user_id
   };
-  res.redirect(`/urls/${shortened}`);
+
+  //changed this...
+  res.redirect(`/urls`);
+  // res.redirect(`/urls/${shortened}`);
 });
 app.get('/u/:shortURL', (req, res) => {
   const longURL = urlDatabase[req.params.shortURL].longURL;
@@ -145,14 +156,24 @@ app.post('/register', (req, res) => {
 
 app.post('/login', (req, res) => {
   let user = findUserBy('email', req.body.email);
+  let templateVars = {
+    user: findUserBy('email', req.body.email),
+    email: true,
+    password: true
+  };
   if (!user) {
-    res.status(403).send("email not found");
+    templateVars.email = false;
+    req.session = null;
+    res.status(403).render("login", templateVars);
   } else if (!bcrypt.compareSync(req.body.password, user.password)/* user.password !== req.body.password */) {
-    res.status(403).send('password incorrect');
+    templateVars.password = false;
+    req.session = null;
+    res.status(403).render('login', templateVars);
+  } else {
+    req.session.user_id = user.id;
+    res.redirect('/urls');
+    // res.cookie('user_id', user.id);
   }
-  req.session.user_id = user.id;
-  // res.cookie('user_id', user.id);
-  res.redirect('/urls');
 });
 app.post('/logout', (req, res) => {
   req.session = null; //=>to destroy the session
