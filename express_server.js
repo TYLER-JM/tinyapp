@@ -83,7 +83,7 @@ app.get('/u/:shortURL', (req, res) => {
   const longURL = urlDatabase[req.params.shortURL].longURL;
   urlDatabase[req.params.shortURL].count++;
 
-  if (!req.session.uniqueVis) {
+  if (!urlDatabase[req.params.shortURL].uniqueVisitors.includes(req.session.uniqueVis)) {
     let uniqueVisitor = generateRandomString();
     urlDatabase[req.params.shortURL].uniqueVisitors.push(uniqueVisitor);
     req.session.uniqueVis = uniqueVisitor;
