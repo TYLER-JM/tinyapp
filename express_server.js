@@ -82,7 +82,12 @@ app.get('/u/:shortURL', (req, res) => {
   }
   const longURL = urlDatabase[req.params.shortURL].longURL;
   urlDatabase[req.params.shortURL].count++;
-  //INCREMENT THE COUNT
+
+  if (!req.session.uniqueVis) {
+    let uniqueVisitor = generateRandomString();
+    urlDatabase[req.params.shortURL].uniqueVisitors.push(uniqueVisitor);
+    req.session.uniqueVis = uniqueVisitor;
+  }
   res.redirect(longURL);
 });
 app.get('/register', (req, res) => {
@@ -118,7 +123,8 @@ app.post('/urls', (req, res) => {
   urlDatabase[shortened] = {
     longURL: req.body.longURL,
     userID: req.session.user_id,
-    count: 0
+    count: 0,
+    uniqueVisitors: []
   };
 
   // would rather it did this...
